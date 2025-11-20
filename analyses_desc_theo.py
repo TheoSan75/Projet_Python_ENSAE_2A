@@ -55,6 +55,7 @@ print(data_villes.shape, data_tourisme.shape, data_villes_tourisme.shape)
 # ===================================
 
 ################## 3.1. Renommage des colonnes ##################
+
 # Nouveau nom pour les colonnes
 data_villes_tourisme = data_villes_tourisme.rename(columns={
     "CODGEO": "code_geo",
@@ -74,6 +75,7 @@ data_villes_tourisme = data_villes_tourisme.rename(columns={
 print(data_villes_tourisme.head())
 
 ################## 3.2. Valeurs manquantes ##################
+
 df_villes = data_villes_tourisme.copy()
 
 unavailable_values = [
@@ -100,6 +102,7 @@ print(report)
 print(df_villes.shape)
 
 ################## 3.3. Suppression des villes hors Métropole ##################
+
 # Suppression des villes dont le code geo commence par 97, 2A, 2B (Outre-mer et Corse)
 # S'assurer que code_geo est une chaîne
 df_villes["code_geo"] = df_villes["code_geo"].astype(str)
@@ -116,6 +119,7 @@ nan_report = pd.DataFrame({
 print(nan_report)
 
 ################## 3.4. Transformation des types ##################
+
 # Transformer les deux premières colonnes en texte
 df_villes["code_geo"] = df_villes["code_geo"].astype(str)
 df_villes["libelle"] = df_villes["libelle"].astype(str)
@@ -128,11 +132,12 @@ for col in df_villes.columns[2:]:
 print(df_villes.dtypes)
 
 ################## 3.5. Visualisation des distributions ##################
-# Plot and save each numeric column
+
+# Distribution de chaque colonne
 numeric_cols = df_villes.columns[2:]
 for col in numeric_cols:
     plt.figure(figsize=(8, 4))
-    data = df_villes[col].dropna() + 1e-6  # avoid log(0)
+    data = df_villes[col].dropna() + 1e-6  # éviter log(0)
     bins = np.logspace(np.log10(data.min()), np.log10(data.max()), 50)
     plt.hist(data, bins=bins, color='skyblue', edgecolor='black')
     plt.xscale('log')
@@ -141,33 +146,6 @@ for col in numeric_cols:
     plt.title(f'Distribution of {col} (log scale)')
     plt.tight_layout()
     
-    # Save figure to file
     filename = f"outputs/Desc_All_Cities/hist_{col}.png".replace(" ", "_")
     plt.savefig(filename)
-    plt.close()  # close to avoid blocking
-    print(f"Saved histogram for {col} as {filename}")
-"""
-# Convertir les colonnes en numérique
-cols_to_convert = data_villes_tourisme.columns[2:].tolist()
-print(f"Nombre de colonnes à convertir: {len(cols_to_convert)}")
-
-conversions_success = 0
-conversions_failed = []
-
-for col in cols_to_convert:
-    try:
-        # Convertir en numérique, les valeurs non-numériques deviennent NaN
-        data_villes_tourisme[col] = pd.to_numeric(data_villes_tourisme[col], errors='coerce')
-        conversions_success += 1
-    except Exception as e:
-        conversions_failed.append(col)
-        print(f"Erreur lors de la conversion de '{col}': {e}")
-
-print(f"\nConversions réussies: {conversions_success}/{len(cols_to_convert)}")
-if conversions_failed:
-    print(f"Conversions échouées: {len(conversions_failed)}")
-    print(f"  Colonnes: {conversions_failed[:5]}{'...' if len(conversions_failed) > 5 else ''}")
-
-# Afficher le nombre de valeurs manquantes créées
-n_missing_created = data_villes_tourisme[cols_to_convert].isnull().sum().sum()
-print(f"✓ Valeurs manquantes créées lors de la conversion: {n_missing_created}")"""
+    plt.close()
