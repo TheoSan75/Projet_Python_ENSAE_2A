@@ -24,7 +24,7 @@ print("="*80)
 print("CHARGEMENT DES DONNÉES")
 print("="*80)
 
-data_air = pd.read_csv("data/raw_data/Export Moy. annuelle - 20251120135910 - 2022-01-01 00_00 - 2022-12-31 23_00.csv")
+data_air = pd.read_csv("data/raw_data/data_air_2022.csv")
 data_villes = pd.read_csv("data/raw_data/data.csv", sep=";")
 data_tourisme = pd.read_csv("data/raw_data/BDD_tourisme_communes_2022.csv", sep=";")
 
@@ -133,8 +133,9 @@ print(df_villes.dtypes)
 
 ################## 3.5. Visualisation des distributions ##################
 
-# Distribution de chaque colonne
+# Distribution de chaque colonne (sauf nb_campings_2022)
 numeric_cols = df_villes.columns[2:]
+numeric_cols = numeric_cols.drop("nb_campings_2022")
 for col in numeric_cols:
     plt.figure(figsize=(8, 4))
     data = df_villes[col].dropna() + 1e-6  # éviter log(0)
@@ -145,7 +146,28 @@ for col in numeric_cols:
     plt.ylabel('Count')
     plt.title(f'Distribution of {col} (log scale)')
     plt.tight_layout()
-    
-    filename = f"outputs/Desc_All_Cities/hist_{col}.png".replace(" ", "_")
+
+    filename = f"output/Desc_All_Cities/hist_{col}.png".replace(" ", "_")
     plt.savefig(filename)
     plt.close()
+
+# Distribution de nb_campings_2022 (échelle linéaire)
+col = "nb_campings_2022"
+
+plt.figure(figsize=(8, 4))
+data = df_villes[col].dropna()
+
+# Déterminer les bins. Pour une colonne avec beaucoup de zéros,
+# on peut commencer les bins à 0.
+# Un bon choix est d'utiliser un nombre fixe de bins ou de définir les limites
+# manuellement pour bien capturer les petites valeurs.
+max_val = data.max()
+bins = np.arange(0, max_val + 2, 1) # Bins de taille 1 pour les nombres entiers de campings
+plt.hist(data, bins=bins, color='skyblue', edgecolor='black', align='left')
+plt.xlabel(col)
+plt.ylabel('Count')
+plt.title(f'Distribution of {col} (Linear scale)')
+plt.tight_layout()
+filename = f"output/Desc_All_Cities/hist_linear_{col}.png"
+plt.savefig(filename)
+plt.close()
