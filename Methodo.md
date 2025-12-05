@@ -17,6 +17,7 @@ Viz:
 
 - Préprocessing (réduction de dimension, nettoyage)
 - Fit deRegressions linéaires/Lasso/Données de panel
+- dans un second temps, garder que les stations urbaines et périurbaines ? (pas les rurales)
 
 ### Etude de l'origine de la pollution de l'air par ML
 
