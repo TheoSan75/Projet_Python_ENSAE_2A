@@ -1,5 +1,30 @@
-# Projet_Python_ENSAE_2A
+# Projet Python 
 
-## A faire
+*Aymeric Lelièvre et Théo Sannier, 2025*
 
-stats descriptives sur les villes
+# Table des matières
+1. [Objectifs](#objectifs)
+2. [Sources des données](#sources)
+3. [Présentation du dépôt](#pres)
+4. [Licence](#licence)
+
+## 1. Objectifs <a name="objectifs">
+
+Il s'agit de prédire/expliquer les déterminants de la pollution de l'air dans les villes en France métropolitaine, à partir de caractéristiques démographiques et économiques des villes.
+
+## 2. Sources des données <a name="sources">
+
+Deux sources de données sont utilisées essentiellement:
+
+- Données de qualité de l'air (https://www.geodair.fr/): Relevé des moyennes des concentrations en O3, NOX, PM10 et PM2.5 dans l'air par les stations de mesure en France métropolitaine en 2022.
+- Données économiques et démographiques des villes (https://statistiques-locales.insee.fr/): Données annuelles sur les communes de France pour les années 2021 ou 2022 ou 2023 (les données n'étant pas toutes disponibles pour 2022, nous avons utilisé certaines données de 2021 et de 2023, en faisant l'hypothèse que les variations des données d'une année à l'autre sont négligeables.)
+
+## 3. Présentation du dépôt <a name=pres>
+
+Le fichier synthétisant nos analyses et constituant ainsi notre rapport final est ```XXX.ipynb```.
+Certaines fonctions plus lourdes sont définies dans des scripts du dossier ```scripts```.
+Les données initiales, telles que récupérées sur internet sont localisées dans le dossier ```data/raw_data```
+
+## 4. Licence <a name="licence">
+
+Ce projet est sous licence GPLv3.
