@@ -12,6 +12,7 @@ warnings.filterwarnings('ignore')
 # Configuration pour l'affichage
 plt.style.use('seaborn-v0_8-darkgrid')
 sns.set_palette("husl")
+sns.set_theme(style="whitegrid")
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', 100)
 pd.set_option('display.width', None)
@@ -132,42 +133,50 @@ for col in df_villes.columns[2:]:
 print(df_villes.dtypes)
 
 ################## 3.5. Visualisation des distributions ##################
-
-# Distribution de chaque colonne (sauf nb_campings_2022)
-numeric_cols = df_villes.columns[2:]
-numeric_cols = numeric_cols.drop("nb_campings_2022")
+# Les valeurs manquantes sont supprimées car peu nombreuses et il s'agit ici uniquement d'avoir une idée des distributions.
+# La colonne Mediane_niveau_vie_2021 contient elle beaucoup plus de valeurs manquantes.
+## Distributions en Échelle Logarithmique (Simples)
+numeric_cols = df_villes.columns[2:].drop("nb_campings_2022")
+print("Numeric cols:", numeric_cols)
 for col in numeric_cols:
-    plt.figure(figsize=(8, 4))
-    data = df_villes[col].dropna() + 1e-6  # éviter log(0)
-    bins = np.logspace(np.log10(data.min()), np.log10(data.max()), 50)
-    plt.hist(data, bins=bins, color='skyblue', edgecolor='black')
-    plt.xscale('log')
-    plt.xlabel(col)
-    plt.ylabel('Count')
-    plt.title(f'Distribution of {col} (log scale)')
+    plt.figure(figsize=(9, 5))
+    data = df_villes[col].dropna() + 1e-6
+    sns.histplot(
+        data,
+        color=sns.color_palette("viridis")[0],
+        edgecolor='black',
+        alpha=0.7,
+        log_scale=True,
+        kde=True,
+    )
+    plt.xlabel(col, fontsize=12)
+    plt.ylabel('Count', fontsize=12)
+    plt.title(f'Distribution de **{col}** (Échelle Logarithmique)', fontsize=14, fontweight='bold')
+    plt.grid(axis='y', linestyle='--', alpha=0.6)
     plt.tight_layout()
-
     filename = f"output/Desc_All_Cities/hist_{col}.png".replace(" ", "_")
-    plt.savefig(filename)
+    plt.savefig(filename, dpi=300)
     plt.close()
 
-# Distribution de nb_campings_2022 (échelle linéaire)
+## Distribution de nb_campings_2022 (Échelle Linéaire)
 col = "nb_campings_2022"
 
-plt.figure(figsize=(8, 4))
+plt.figure(figsize=(9, 5))
 data = df_villes[col].dropna()
-
-# Déterminer les bins. Pour une colonne avec beaucoup de zéros,
-# on peut commencer les bins à 0.
-# Un bon choix est d'utiliser un nombre fixe de bins ou de définir les limites
-# manuellement pour bien capturer les petites valeurs.
-max_val = data.max()
-bins = np.arange(0, max_val + 2, 1) # Bins de taille 1 pour les nombres entiers de campings
-plt.hist(data, bins=bins, color='skyblue', edgecolor='black', align='left')
-plt.xlabel(col)
-plt.ylabel('Count')
-plt.title(f'Distribution of {col} (Linear scale)')
+max_campings = int(data.max())
+sns.histplot(
+    data,
+    color=sns.color_palette("pastel")[1],
+    edgecolor='black',
+    alpha=0.8,
+    discrete=True,
+    shrink=0.8
+)
+plt.xlabel(col, fontsize=12)
+plt.ylabel('Count', fontsize=12)
+plt.title(f'Distribution de **{col}** (Échelle Linéaire)', fontsize=14, fontweight='bold')
+plt.grid(axis='y', linestyle='--', alpha=0.6)
 plt.tight_layout()
 filename = f"output/Desc_All_Cities/hist_linear_{col}.png"
-plt.savefig(filename)
+plt.savefig(filename, dpi=300)
 plt.close()
