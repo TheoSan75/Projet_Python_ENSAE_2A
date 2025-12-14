@@ -51,17 +51,12 @@ def add_city_codes(geodair):
 
 def add_city_coords(geodair):
 
-    # Téléchargement direct depuis l'INSEE
-    url_communes = "https://etalab-datasets.geo.data.gouv.fr/communes/latest/communes.csv"
+    communes = pd.read_csv("data/raw_data/20230823-communes-departement-region.csv")
 
-    communes = pd.read_csv(url_communes, sep=";")
-
-    # Garder uniquement les colonnes utiles
-    communes = communes[["code", "nom", "centre_lat", "centre_lon"]].rename(columns={
-        "code": "CODGEO",
-        "nom": "Ville",
-        "centre_lat": "Latitude_commune",
-        "centre_lon": "Longitude_commune"
+    communes = communes[["code_commune_INSEE", "latitude", "longitude"]].rename(columns={
+        "code_commune_INSEE": "CODGEO",
+        "latitude": "Latitude_commune",
+        "longitude": "Longitude_commune"
     })
 
     geodair = geodair.merge(
@@ -70,12 +65,14 @@ def add_city_coords(geodair):
         how="left"
     )
 
+    return geodair
+
 
 def add_city_columns(input_filename, output_filename):
 
     geodair = pd.read_csv("data/raw_data/" + input_filename, sep=";")
 
     add_city_codes(geodair)
-    add_city_coords(geodair)
+    geodair = add_city_coords(geodair)
 
     geodair.to_csv("data/processed_data/" + output_filename, index=False)
