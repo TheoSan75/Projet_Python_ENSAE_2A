@@ -88,15 +88,40 @@ print("\n" + "="*80)
 print("MERGE DES DONNÉES AIR ET ECO")
 print("="*80)
 
+# CODGEO contient quelques valeurs manquantes, il faut donc le nettoyer avant le merge
+# (si pandas detecte des nan, il va transformer la colonne en float, ce qui n'est pas souhaitable
+# pour des CODGEO)
 
+
+def clean_codgeo(df, col='CODGEO'):
+    df[col] = (
+        df[col]
+        .astype(str)                  # Convertit en texte
+        .str.replace(r'\.0$', '', regex=True) # Supprime le ".0" des floats
+        .str.strip()                  # Enlève les espaces éventuels
+    )
+    # Sécurité : si la valeur était initialement vide (NaN), on remet un vrai NaN
+    df.loc[df[col].str.contains('nan', case=False), col] = np.nan
+    return df
+
+geodair_2022 = clean_codgeo(geodair_2022)
+data_villes = clean_codgeo(data_villes)
 # Conversion de CODGEO en string pour les deux DataFrames
 geodair_2022['CODGEO'] = geodair_2022['CODGEO'].astype(str)
 data_villes['CODGEO'] = data_villes['CODGEO'].astype(str)
 # Jointure des données des villes et du tourisme
-data_etude = geodair_2022.merge(data_villes, on="CODGEO", how="left")
+data_etude = pd.merge(
+    geodair_2022, 
+    data_villes, 
+    on="CODGEO", 
+    how="left"
+)
+
+# Vérification rapide
+print(f"Lignes après fusion : {len(data_etude)}")
+print(data_etude.head())
 print(f"\nShapes après merge:")
 print(data_villes.shape, geodair_2022.shape, data_etude.shape)
-
 # Sauvegarde simple dans le répertoire courant
 data_etude.to_csv("data/processed_data/data_etude_villes_relevees.csv", index=False, sep=";")
 
