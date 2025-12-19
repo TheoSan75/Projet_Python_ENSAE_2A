@@ -27,9 +27,11 @@ print("="*80)
 print("CHARGEMENT DES DONNÉES")
 print("="*80)
 
-geodair_2022 = pd.read_csv("data/processed_data/geodair_2022_villes.csv", sep=",")
+geodair_2022 = pd.read_csv("data/processed_data/geodair_2022_villes_codgeo3.csv", sep=",")
 data_villes = pd.read_csv("data/processed_data/data_villes_tourisme.csv", sep=",")
 
+print('Geodair shape:', geodair_2022.shape)
+print('Data Villes shape:', data_villes.shape)
 # ===========================
 # 1bis. SEPARATION DES DONNÉES
 # ===========================
@@ -86,13 +88,18 @@ print("\n" + "="*80)
 print("MERGE DES DONNÉES AIR ET ECO")
 print("="*80)
 
-# Jointure des données des villes et du tourisme
-print("Shape data_villes: ", data_villes.shape)
-print("Shape geodair2022: ", geodair_2022.shape)
 
+# Conversion de CODGEO en string pour les deux DataFrames
+geodair_2022['CODGEO'] = geodair_2022['CODGEO'].astype(str)
+data_villes['CODGEO'] = data_villes['CODGEO'].astype(str)
+# Jointure des données des villes et du tourisme
 data_etude = geodair_2022.merge(data_villes, on="CODGEO", how="left")
 print(f"\nShapes après merge:")
 print(data_villes.shape, geodair_2022.shape, data_etude.shape)
+
+# Sauvegarde simple dans le répertoire courant
+data_etude.to_csv("data/processed_data/data_etude_villes_relevees.csv", index=False, sep=";")
+
 
 # ===================================
 # 3. STATISTIQUES DESCRIPTIVES VILLES
