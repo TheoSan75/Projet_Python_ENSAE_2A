@@ -46,10 +46,10 @@ print(f"\nShapes après merge:")
 print(data_villes.shape, data_tourisme.shape, data_villes_tourisme.shape)
 
 
-## Sauvegarde du dataset merged
-#data_villes_tourisme.to_csv("Projet_Python_ENSAE_2A/data/processed_data/data_villes_tourisme.csv", index=False)
-#
-#print(f"\ndata_air shape: {data_air.shape}")
+# Sauvegarde du dataset merged
+data_villes_tourisme.to_csv("data/processed_data/data_villes_tourisme.csv", index=False)
+
+print(f"\ndata_air shape: {data_air.shape}")
 
 # ===================================
 # 3. STATISTIQUES DESCRIPTIVES VILLES
@@ -132,6 +132,9 @@ for col in df_villes.columns[2:]:
 # Vérifier les types
 print(df_villes.dtypes)
 
+# Sauvegarde du dataset villes + tourisme propre (après traitement des valeurs manquantes, des villes hors métropole)
+df_villes.to_csv("data/processed_data/data_villes_tourisme.csv", index=False)
+
 ################## 3.5. Visualisation des distributions ##################
 # Les valeurs manquantes sont supprimées car peu nombreuses et il s'agit ici uniquement d'avoir une idée des distributions.
 # La colonne Mediane_niveau_vie_2021 contient elle beaucoup plus de valeurs manquantes.
@@ -180,3 +183,58 @@ plt.tight_layout()
 filename = f"output/Desc_All_Cities/hist_linear_{col}.png"
 plt.savefig(filename, dpi=300)
 plt.close()
+
+################## 3.6. Corrélogramme des variables économiques ##################
+
+print("\n" + "="*80)
+print("GÉNÉRATION DU CORRÉLOGRAMME")
+print("="*80)
+
+# 1. Sélection des colonnes numériques
+# On utilise select_dtypes pour récupérer automatiquement toutes les colonnes converties en float/int
+# Cela inclut nb_campings_2022 qui avait été exclu de la liste 'numeric_cols' précédente
+cols_corr = df_villes.select_dtypes(include=[np.number]).columns
+
+# 2. Calcul de la matrice de corrélation
+# Note : corr() exclut automatiquement les paires avec des valeurs manquantes (NaN)
+corr_matrix = df_villes[cols_corr].corr()
+
+# 3. Création d'un masque pour cacher la partie supérieure triangulaire (redondante)
+mask = np.triu(np.ones_like(corr_matrix, dtype=bool))
+
+# 4. Configuration de la figure
+plt.figure(figsize=(14, 12))
+
+# 5. Création d'une palette de couleurs "Fancy"
+# Palette divergente : Rouge (Corrélation +) <-> Blanc (Neutre) <-> Bleu (Corrélation -)
+cmap = sns.diverging_palette(240, 10, as_cmap=True)
+
+# 6. Tracé de la Heatmap
+sns.heatmap(
+    corr_matrix, 
+    mask=mask, 
+    cmap=cmap, 
+    vmax=1, 
+    vmin=-1, 
+    center=0,
+    square=True, 
+    linewidths=.5, 
+    cbar_kws={"shrink": .75, "label": "Coefficient de corrélation de Pearson"},
+    annot=True,             # Afficher les chiffres
+    fmt=".2f",              # Format à 2 décimales
+    annot_kws={"size": 9, "weight": "bold"}   # Style du texte à l'intérieur des cases
+)
+
+# 7. Mise en forme des titres et axes
+plt.title('Matrice de Corrélation des Variables Économiques et Démographiques', 
+          fontsize=18, fontweight='bold', pad=20, color='#333333')
+plt.xticks(rotation=45, ha='right', fontsize=11)
+plt.yticks(rotation=0, fontsize=11)
+
+# 8. Sauvegarde
+plt.tight_layout()
+filename_corr = "output/Desc_All_Cities/correlogram_variables.png"
+plt.savefig(filename_corr, dpi=300, bbox_inches='tight')
+plt.close()
+
+print(f"Corrélogramme sauvegardé avec succès : {filename_corr}")

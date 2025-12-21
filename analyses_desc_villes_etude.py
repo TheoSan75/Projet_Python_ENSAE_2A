@@ -25,7 +25,7 @@ pd.set_option("display.max_colwidth", None)
 # ===========================
 
 # On charge les deux fichiers principaux
-geodair = pd.read_csv("data/processed_data/geodair_2022_villes_codgeo3.csv", sep=",")
+geodair = pd.read_csv("data/processed_data/geodair_2022_villes_codgeo2.csv", sep=",")
 data_villes = pd.read_csv("data/processed_data/data_villes_tourisme.csv", sep=",")
 
 # ===========================
