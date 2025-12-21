@@ -41,6 +41,15 @@ def prepare_geodair_data(df_geodair, df_villes_clean):
     # Rename
     df_geodair = df_geodair.rename(columns=RENAME_GEODAIR)
 
+    # Nettoyage de valeur et valeur_brute
+    cols_pollution = ['valeur', 'valeur_brute']
+    for col in cols_pollution:
+        if col in df_geodair.columns:
+            # Si c'est du string, on remplace virgule par point
+            if df_geodair[col].dtype == 'object':
+                df_geodair[col] = df_geodair[col].str.replace(',', '.')
+            df_geodair[col] = pd.to_numeric(df_geodair[col], errors='coerce')
+
     # Standardize Merge Keys
     df_geodair['codgeo'] = df_geodair['codgeo'].astype(str).str.replace('.0', '', regex=False)
 
