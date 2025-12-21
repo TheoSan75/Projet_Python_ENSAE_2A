@@ -11,35 +11,131 @@ from scipy import stats
 import warnings
 warnings.filterwarnings('ignore')
 
-# Configuration pour l'affichage
-plt.style.use('seaborn-v0_8-darkgrid')
-sns.set_palette("husl")
-sns.set_theme(style="whitegrid")
-pd.set_option('display.max_columns', None)
-pd.set_option('display.max_rows', 100)
-pd.set_option('display.width', None)
-pd.set_option("display.max_colwidth", None)
-
 # ===========================
-# 1. CHARGEMENT DES DONNÉES
+# 0. CONFIGURATION ET MAPPING
+# ===========================
+
+# Dictionnaire pour renommer les colonnes de GEODAIR (Nom courant -> Clean Snake_case)
+rename_geodair = {
+    'Date de début': 'date_debut',
+    'Date de fin': 'date_fin',
+    'Organisme': 'organisme',
+    'code zas': 'code_zas',
+    'Zas': 'nom_zas',
+    'code site': 'code_site',
+    'nom site': 'nom_site',
+    'type d\'implantation': 'type_implantation',
+    'Polluant': 'polluant',
+    'type d\'influence': 'type_influence',
+    'Réglementaire': 'reglementaire',
+    'type d\'évaluation': 'type_evaluation',
+    'type de valeur': 'type_valeur',
+    'valeur': 'valeur',
+    'valeur brute': 'valeur_brute',
+    'unité de mesure': 'unite',
+    'taux de saisie': 'taux_saisie',
+    'couverture temporelle': 'couverture_temporelle',
+    'couverture de données': 'couverture_donnees',
+    'code qualité': 'code_qualite',
+    'validité': 'validite',
+    'Latitude': 'latitude_site',
+    'Longitude': 'longitude_site',
+    'Ville': 'ville',
+    'CODGEO': 'codgeo',
+    'Latitude_commune': 'latitude_commune',
+    'Longitude_commune': 'longitude_commune'
+}
+
+# Dictionnaire pour renommer les colonnes de DATA_VILLES
+rename_villes = {
+    'code_geo': 'codgeo',
+    'libelle': 'nom_commune'
+}
+
+# Dictionnaire pour l'AFFICHAGE (Graphiques, Titres)
+# Utilisation : graph_labels.get(ma_colonne, ma_colonne)
+graph_labels = {
+    # --- Données Qualité de l'Air (Geodair) ---
+    'valeur': 'Concentration (moy. annuelle)',
+    'polluant': 'Polluant',
+    'nom_site': 'Station de mesure',
+    'type_implantation': 'Type d\'implantation',
+    'type_influence': 'Type d\'influence',
+    'organisme': 'Organisme (AASQA)',
+    'ville': 'Ville',
+    'unite': 'Unité de mesure',
+    'nom_zas': 'Zone Administrative (ZAS)',
+    # --- Données Démographiques & Économiques (Villes) ---
+    'nom_commune': 'Commune',
+    'population_2022': 'Population (2022)',
+    'densite_population_2022': 'Densité de population (hab/km²)',
+    'mediane_niveau_vie_2021': 'Niveau de vie médian (€)',
+    'taux_activite_2022': 'Taux d\'activité (%)',
+    'nb_etablissements_2023': 'Nombre total d\'établissements',
+    # --- Données Tourisme ---
+    'nb_hotels_2022': 'Nombre d\'hôtels',
+    'nb_campings_2022': 'Nombre de campings',
+    # --- Parts sectorielles (%) ---
+    'part_commerce_transport_services_2023': 'Part Commerce & Services (%)',
+    'part_industrie_2023': 'Part Industrie (%)',
+    'part_construction_2023': 'Part Construction (%)'
+}
+# ===========================
+# 1. CHARGEMENT DES DONNÉES ET RENOMMAGE
 # ===========================
 
 # On charge les deux fichiers principaux
 geodair = pd.read_csv("data/processed_data/geodair_2022_villes_codgeo2.csv", sep=",")
 data_villes = pd.read_csv("data/processed_data/data_villes_tourisme.csv", sep=",")
+# Renommage des colonnes
+geodair = geodair.rename(columns=rename_geodair)
+data_villes = data_villes.rename(columns=rename_villes)
 
+print("Colonnes Geodair :", geodair.columns.tolist())
+print("-" * 20)
+print("Colonnes Villes :", data_villes.columns.tolist())
 # ===========================
 # 2. NETTOYAGE ET MERGE
 # ===========================
 
-# On nettoie la colonne CODGEO pour être sûr que la fusion marche bien
+# On nettoie la colonne codgeo pour être sûr que la fusion marche bien
 # On transforme en texte et on enlève les '.0' qui traînent
-geodair['CODGEO'] = geodair['CODGEO'].astype(str).str.replace('.0', '', regex=False)
-data_villes['CODGEO'] = data_villes['CODGEO'].astype(str).str.replace('.0', '', regex=False)
+geodair['codgeo'] = geodair['codgeo'].astype(str).str.replace('.0', '', regex=False)
+data_villes['codgeo'] = data_villes['codgeo'].astype(str).str.replace('.0', '', regex=False)
 
 # On colle les infos des villes sur les mesures de l'air
-df_complet = pd.merge(geodair, data_villes, on="CODGEO", how="left")
+df_merged = pd.merge(geodair, data_villes, on="codgeo", how="left")
 
+# Liste des colonnes à conserver
+cols_to_keep = [
+    'polluant',
+    'valeur',
+    'valeur_brute',
+    'unite',
+    'ville',
+    'codgeo',
+    'latitude_site',
+    'longitude_site',
+    'latitude_commune',
+    'longitude_commune',
+    'part_commerce_transport_services_2023',
+    'population_2022',
+    'nb_etablissements_2023',
+    'densite_population_2022',
+    'taux_activite_2022',
+    'mediane_niveau_vie_2021',
+    'part_industrie_2023',
+    'part_construction_2023',
+    'nb_hotels_2022',
+    'nb_campings_2022'
+]
+
+# On crée un nouveau DataFrame propre avec .copy() pour éviter les problèmes
+df_complet = df_merged[cols_to_keep].copy()
+
+# Affichage de vérification
+print(f"Dimensions du DataFrame final : {df_complet.shape}")
+print(df_complet.head())
 # Sauvegarde
 df_complet.to_csv("data/processed_data/data_etude_villes_relevees.csv", index=False, sep=";")
 
@@ -48,12 +144,10 @@ df_complet.to_csv("data/processed_data/data_etude_villes_relevees.csv", index=Fa
 # ===========================
 
 # Liste des colonnes qui contiennent des chiffres (et du texte comme 'N/A')
-colonnes_numeriques = [
-    "valeur", "valeur brute", "Population municipale 2022", 
-    "Médiane du niveau de vie 2021", "Densité de population (historique depuis 1876) 2022",
-    "Part des effectifs des commerces, transports, services divers 2023",
-    "Part des effectifs de l'industrie 2023", "Nombre d'établissements 2023",
-    "Nb_hotels_2022", "Nb_campings_2022"
+colonnes_numeriques = ['valeur', 'valeur_brute', 'part_commerce_transport_services_2023',
+                    'population_2022', 'nb_etablissements_2023', 'densite_population_2022',
+                    'taux_activite_2022', 'mediane_niveau_vie_2021', 'part_industrie_2023',
+                    'part_construction_2023', 'nb_hotels_2022', 'nb_campings_2022'
 ]
 
 # Petite fonction pour nettoyer n'importe quel dataset (notamment pour df_complet ET data_villes)
@@ -79,14 +173,15 @@ data_villes = nettoyer_chiffres(data_villes, colonnes_numeriques)
 # Dictionnaire pour dire comment on regroupe : 
 # - Moyenne pour la pollution
 # - On garde la première valeur trouvée pour les infos de la ville (c'est la même partout pour une ville donnée)
-regles_agregation = {"valeur": "mean", "valeur brute": "mean"}
+regles_agregation = {"valeur": "mean", "valeur_brute": "mean"}
 
 # Pour toutes les autres colonnes utiles, on garde la première valeur ('first')
 colonnes_a_garder = [
-    "CODGEO", "Libellé", "Population municipale 2022", "Médiane du niveau de vie 2021",
-    "Densité de population (historique depuis 1876) 2022",
-    "Part des effectifs des commerces, transports, services divers 2023",
-    "Part des effectifs de l'industrie 2023", "Nb_hotels_2022"
+    "codgeo", "nom_commune", "population_2022", "mediane_niveau_vie_2021",
+    "densite_population_2022",
+    "part_commerce_transport_services_2023",
+    "part_industrie_2023", "nb_hotels_2022", "nb_etablissements_2023", "taux_activite_2022",
+    "part_construction_2023", "nb_campings_2022"
 ]
 
 for col in colonnes_a_garder:
@@ -94,24 +189,24 @@ for col in colonnes_a_garder:
         regles_agregation[col] = "first"
 
 # On groupe par Polluant et par Ville
-df_groupe = df_complet.groupby(["Polluant", "Ville"], as_index=False).agg(regles_agregation)
+df_groupe = df_complet.groupby(["polluant", "ville"], as_index=False).agg(regles_agregation)
 
 # ===========================
 # 5. SÉPARATION, SAUVEGARDE ET ANALYSE
 # ===========================
 
-liste_polluants = df_groupe["Polluant"].unique()
+liste_polluants = df_groupe["polluant"].unique()
 print(f"Polluants trouvés : {liste_polluants}")
 
 for pol in liste_polluants:
     print(f"\n--- TRAITEMENT : {pol} ---")
 
     # 1. On filtre pour ne garder que ce polluant
-    df_polluant = df_groupe[df_groupe["Polluant"] == pol]
+    df_polluant = df_groupe[df_groupe["polluant"] == pol]
 
     # 2. Vérifications de sécurité
     # On vérifie qu'il n'y a pas de doublons de ville
-    if df_polluant["Ville"].duplicated().any():
+    if df_polluant["ville"].duplicated().any():
         print(f"ATTENTION : Il reste des villes en double pour {pol} !")
     else:
         print(f"Check OK : Une seule ligne par ville.")
@@ -127,17 +222,17 @@ for pol in liste_polluants:
     labels = ['Rurale (<2k)', 'Petite (2k-10k)', 'Moyenne (10k-50k)', 'Grande (>50k)']
 
     # Répartition France
-    france_dist = pd.cut(data_villes['Population municipale 2022'], bins=bins, labels=labels).value_counts(normalize=True) * 100
+    france_dist = pd.cut(data_villes['population_2022'], bins=bins, labels=labels).value_counts(normalize=True) * 100
     # Répartition Echantillon
-    sample_dist = pd.cut(df_polluant['Population municipale 2022'], bins=bins, labels=labels).value_counts(normalize=True) * 100
+    sample_dist = pd.cut(df_polluant['population_2022'], bins=bins, labels=labels).value_counts(normalize=True) * 100
 
     print("\n   -> Comparaison des tailles de ville (%):")
     comparison = pd.DataFrame({'France': france_dist, f'Echantillon ({pol})': sample_dist})
     print(comparison.round(1))
 
     # B. Comparaison Niveau de vie et Services (médianes)
-    med_vie_fr = data_villes['Médiane du niveau de vie 2021'].median()
-    med_vie_ech = df_polluant['Médiane du niveau de vie 2021'].median()
+    med_vie_fr = data_villes['mediane_niveau_vie_2021'].median()
+    med_vie_ech = df_polluant['mediane_niveau_vie_2021'].median()
 
     print(f"\n   -> Niveau de vie médian : France = {med_vie_fr} € | Echantillon = {med_vie_ech} €")
 
@@ -148,13 +243,11 @@ print("\nTerminé !")
 # ===========================
 
 # Liste des variables économiques à analyser
-vars_eco = [
-    "Population municipale 2022", 
-    "Médiane du niveau de vie 2021", 
-    "Densité de population (historique depuis 1876) 2022",
-    "Part des effectifs des commerces, transports, services divers 2023",
-    "Part des effectifs de l'industrie 2023", 
-    "Nb_hotels_2022"
+vars_eco = ["population_2022", "mediane_niveau_vie_2021",
+    "densite_population_2022",
+    "part_commerce_transport_services_2023",
+    "part_industrie_2023", "nb_hotels_2022", "nb_etablissements_2023", "taux_activite_2022",
+    "part_construction_2023", "nb_campings_2022"
 ]
 
 # Création du dossier pour les graphiques s'il n'existe pas
@@ -167,7 +260,7 @@ for pol in liste_polluants:
     print(f" >> Génération des graphes pour : {pol}")
     
     # On récupère l'échantillon pour ce polluant
-    df_sample = df_groupe[df_groupe["Polluant"] == pol]
+    df_sample = df_groupe[df_groupe["polluant"] == pol]
     
     for var in vars_eco:
         # Vérification si la colonne existe
