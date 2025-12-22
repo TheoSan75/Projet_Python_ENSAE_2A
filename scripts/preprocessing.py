@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from .config import RENAME_VILLES_FULL, UNAVAILABLE_VALUES, RENAME_GEODAIR
+from scripts.config import RENAME_VILLES_FULL, UNAVAILABLE_VALUES, RENAME_GEODAIR
 
 
 def load_and_merge_cities(path_geodair, path_villes, path_tourisme):
@@ -80,3 +80,49 @@ def aggregate_by_pollutant(df_complete):
             regles[col] = "first"
          
     return df_complete.groupby(["polluant", "ville"], as_index=False).agg(regles)
+
+
+def analyze_city_size_distribution(df, pol_name):
+    """
+    Computes proportions and mean pollutant values by city size category.
+    """
+    # Create a working copy to avoid SettingWithCopy warnings on the original dataframe
+    df_calc = df.copy()
+    
+    # 1. Define Categories based on population_2022
+    # Rurale (<2k), Petite (2-10k), Moyenne (10-50k), Grande (>50k)
+    bins = [0, 2000, 10000, 50000, float('inf')]
+    labels = ['Rurale (<2k)', 'Petite (2-10k)', 'Moyenne (10-50k)', 'Grande (>50k)']
+    
+    # Check if population column exists and has data
+    if 'population_2022' not in df_calc.columns:
+        print("Erreur: Colonne 'population_2022' manquante.")
+        return
+
+    # Create the category column
+    # right=False means the left bin is inclusive [0, 2000), [2000, 10000), etc.
+    df_calc['taille_ville'] = pd.cut(df_calc['population_2022'], bins=bins, labels=labels, right=False)
+    
+    # 2. Compute Statistics (Count and Mean)
+    # observed=False ensures all categories are shown even if count is 0
+    stats = df_calc.groupby('taille_ville', observed=False).agg(
+        Nb_Villes=('valeur', 'count'),
+        Moyenne_Mesures=('valeur', 'mean')
+    )
+    
+    # 3. Compute Proportions
+    total_villes = len(df_calc)
+    if total_villes > 0:
+        stats['Proportion (%)'] = (stats['Nb_Villes'] / total_villes * 100).round(2)
+    else:
+        stats['Proportion (%)'] = 0.0
+        
+    # Round the mean for cleaner display
+    stats['Moyenne_Mesures'] = stats['Moyenne_Mesures'].round(3)
+    
+    # Reorder columns for logical flow
+    stats = stats[['Nb_Villes', 'Proportion (%)', 'Moyenne_Mesures']]
+    
+    # Display the result
+    print(f"\n>> Distribution par taille de ville pour : {pol_name}")
+    return stats

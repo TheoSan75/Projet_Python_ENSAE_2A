@@ -38,7 +38,7 @@ def plot_distributions(df, cols, output_dir="output/Desc_All_Cities"):
         plt.savefig(f"{output_dir}/hist_{col}.png", dpi=300)
         plt.close()
 
-def plot_correlation_heatmap(df, output_dir="output/Desc_All_Cities"):
+def plot_correlation_heatmap(df, output_dir="output/Desc_All_Cities", pol=None):
     """Generates and saves the correlation matrix."""
     # On ne garde que les colonnes numériques
     cols_corr = df.select_dtypes(include=[np.number]).columns
@@ -54,7 +54,7 @@ def plot_correlation_heatmap(df, output_dir="output/Desc_All_Cities"):
     )
     plt.title('Matrice de Corrélation')
     plt.tight_layout()
-    plt.savefig(f"{output_dir}/correlogram.png", dpi=300)
+    plt.savefig(f"{output_dir}/correlogram_{pol}.png", dpi=300)
     plt.close()
 
 def plot_comparative_distributions(df_sample, df_france, polluant_name, vars_eco, output_dir="output/plots_comparaison"):
