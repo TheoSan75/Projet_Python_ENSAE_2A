@@ -11,8 +11,9 @@ def load_and_merge_cities(path_geodair, path_villes, path_tourisme):
 
     data_villes.rename(columns={'Code': "CODGEO"}, inplace=True)
     df_merged = data_villes.merge(data_tourisme, on="CODGEO", how="left")
-    
+
     return df_merged, data_geodair
+
 
 def process_city_data(df):
     """Nettoyage du dataframe des villes"""
@@ -79,51 +80,51 @@ def aggregate_by_pollutant(df_complete):
     for col in cols_first:
         if col in df_complete.columns:
             regles[col] = "first"
-         
+ 
     return df_complete.groupby(["polluant", "ville"], as_index=False).agg(regles)
 
 
 def analyze_city_size_distribution(df, pol_name):
     """
-    Computes proportions and mean pollutant values by city size category.
+    Calcule la concentration moyenne de chaque polluant dans chaque taille de ville
     """
-    # Create a working copy to avoid SettingWithCopy warnings on the original dataframe
+    # Duplication du dataframe pour éviter son altération
     df_calc = df.copy()
-    
-    # 1. Define Categories based on population_2022
+
+    # Définition de 4 catégories de villes, selon leur population
     # Rurale (<2k), Petite (2-10k), Moyenne (10-50k), Grande (>50k)
     bins = [0, 2000, 10000, 50000, float('inf')]
     labels = ['Rurale (<2k)', 'Petite (2-10k)', 'Moyenne (10-50k)', 'Grande (>50k)']
-    
-    # Check if population column exists and has data
+
+    # Vérification qu'une colonne population_2022 existe bien
     if 'population_2022' not in df_calc.columns:
         print("Erreur: Colonne 'population_2022' manquante.")
         return
 
-    # Create the category column
-    # right=False means the left bin is inclusive [0, 2000), [2000, 10000), etc.
+    # Création de la colonne contenant la catégorie de la ville
+    # right=False pour que la borne à gauche soit incluse: [0, 2000), [2000, 10000), etc.
     df_calc['taille_ville'] = pd.cut(df_calc['population_2022'], bins=bins, labels=labels, right=False)
-    
-    # 2. Compute Statistics (Count and Mean)
-    # observed=False ensures all categories are shown even if count is 0
+
+    # Calcul des statistiques
+    # observed=False assure que toutes les catégories sont affichées, même si elles ont pour valeur 0
     stats = df_calc.groupby('taille_ville', observed=False).agg(
         Nb_Villes=('valeur', 'count'),
         Moyenne_Mesures=('valeur', 'mean')
     )
-    
-    # 3. Compute Proportions
+
+    # Calcul des proportions de chaque ville
     total_villes = len(df_calc)
     if total_villes > 0:
         stats['Proportion (%)'] = (stats['Nb_Villes'] / total_villes * 100).round(2)
     else:
         stats['Proportion (%)'] = 0.0
-        
-    # Round the mean for cleaner display
+  
+    # Arrondi des moyennes pour un affichage plus propre
     stats['Moyenne_Mesures'] = stats['Moyenne_Mesures'].round(3)
-    
-    # Reorder columns for logical flow
+
+    # Nouvel ordre des colonnes
     stats = stats[['Nb_Villes', 'Proportion (%)', 'Moyenne_Mesures']]
-    
-    # Display the result
+
+    # Affichage
     print(f"\n>> Distribution par taille de ville pour : {pol_name}")
     return stats
