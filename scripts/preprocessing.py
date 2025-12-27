@@ -81,6 +81,7 @@ def aggregate_by_pollutant(df_complete):
         if col in df_complete.columns:
             regles[col] = "first"
     df_aggrege = df_complete.groupby(["polluant", "ville"], as_index=False).agg(regles)
+    print(df_aggrege)
     df_aggrege = df_aggrege.drop("nom_commune", axis=1)
     return df_aggrege
 
