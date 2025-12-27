@@ -37,6 +37,24 @@ def process_city_data(df):
     return df
 
 
+def harmonize_geodair_codes(df):
+    """
+    Mapping des arrondissements de Paris, Lyon, Marseille vers la ville mère
+    """
+    # Dictionnaire de redirection PLM (Paris, Lyon, Marseille)
+    # On utilise des regex pour capter tous les codgeo d'arrondissements
+    plm_mapping = {
+        r'^751\d{2}$': '75056',  # Paris : de 75101 à 75120 -> 75056
+        r'^132\d{2}$': '13055',  # Marseille : de 13201 à 13216 -> 13055
+        r'^693\d{2}$': '69123'   # Lyon : de 69381 à 69389 -> 69123
+    }
+
+    for pattern, replacement in plm_mapping.items():
+        df['codgeo'] = df['codgeo'].replace(pattern, replacement, regex=True)
+
+    return df
+
+
 def prepare_geodair_data(df_geodair, df_villes_clean):
     """Fusion des données météo avec le dataset des villes"""
     # Renommage
@@ -58,6 +76,12 @@ def prepare_geodair_data(df_geodair, df_villes_clean):
     df_villes_prep = df_villes_clean.copy()
     df_villes_prep = df_villes_prep.rename(columns={'code_geo': 'codgeo', 'libelle': 'nom_commune'})
     df_villes_prep['codgeo'] = df_villes_prep['codgeo'].astype(str).str.replace('.0', '', regex=False)
+    # Suppression des observations en Corse et outre-mer
+    df_geodair = df_geodair[~df_geodair["codgeo"].str.startswith(("2A", "2B", "97"))]
+
+    # Mapping des CODGEO pour les villes avec arrondissement
+    # (sinon la jointure ne fonctionnera pas, puisque les CODGEO de df_geodair et df_villes sont différents)
+    df_geodair = harmonize_geodair_codes(df_geodair)
 
     # Jointure
     df_merged = pd.merge(df_geodair, df_villes_prep, on="codgeo", how="left")
@@ -81,7 +105,6 @@ def aggregate_by_pollutant(df_complete):
         if col in df_complete.columns:
             regles[col] = "first"
     df_aggrege = df_complete.groupby(["polluant", "ville"], as_index=False).agg(regles)
-    print(df_aggrege)
     df_aggrege = df_aggrege.drop("nom_commune", axis=1)
     return df_aggrege
 
