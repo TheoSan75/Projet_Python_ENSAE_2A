@@ -33,7 +33,7 @@ def plot_distributions(df, cols, output_dir="output/Desc_All_Cities"):
             log_scale=log_scale,
             color="teal"
         )
-  
+
         plt.title(f'Distribution de {col} {echelle_suffix}')
         plt.tight_layout()
         plt.savefig(f"{output_dir}/hist_{col}.png", dpi=300)

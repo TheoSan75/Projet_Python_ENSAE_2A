@@ -80,8 +80,9 @@ def aggregate_by_pollutant(df_complete):
     for col in cols_first:
         if col in df_complete.columns:
             regles[col] = "first"
- 
-    return df_complete.groupby(["polluant", "ville"], as_index=False).agg(regles)
+    df_aggrege = df_complete.groupby(["polluant", "ville"], as_index=False).agg(regles)
+    df_aggrege = df_aggrege.drop("nom_commune", axis=1)
+    return df_aggrege
 
 
 def analyze_city_size_distribution(df, pol_name):
@@ -118,7 +119,7 @@ def analyze_city_size_distribution(df, pol_name):
         stats['Proportion (%)'] = (stats['Nb_Villes'] / total_villes * 100).round(2)
     else:
         stats['Proportion (%)'] = 0.0
-  
+
     # Arrondi des moyennes pour un affichage plus propre
     stats['Moyenne_Mesures'] = stats['Moyenne_Mesures'].round(3)
 
