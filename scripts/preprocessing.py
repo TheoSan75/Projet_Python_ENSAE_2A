@@ -4,7 +4,7 @@ from scripts.config import RENAME_VILLES_FULL, UNAVAILABLE_VALUES, RENAME_GEODAI
 
 
 def load_and_merge_cities(path_geodair, path_villes, path_tourisme):
-    """Loads raw data and performs the initial merge between Cities and Tourism."""
+    """Import des données et jointure des données touristiques sur les villes"""
     data_geodair = pd.read_csv(path_geodair)
     data_villes = pd.read_csv(path_villes, sep=";")
     data_tourisme = pd.read_csv(path_tourisme, sep=";")
@@ -15,19 +15,19 @@ def load_and_merge_cities(path_geodair, path_villes, path_tourisme):
     return df_merged, data_geodair
 
 def process_city_data(df):
-    """Cleans city data: Renaming, NaNs, Filtering Overseas, Type casting."""
-    # 1. Renaming
+    """Nettoyage du dataframe des villes"""
+    # Renommage
     df = df.rename(columns=RENAME_VILLES_FULL)
 
-    # 2. Handle NaNs
+    # Gestion des valeurs manquantes
     df = df.replace({',': '.'}, regex=True)
     df = df.replace(UNAVAILABLE_VALUES, np.nan)
 
-    # 3. Filter specific regions (Corsica 2A/2B and Overseas 97)
+    # Suppressions des villes de Corse et d'outre-mer
     df["code_geo"] = df["code_geo"].astype(str)
     df = df[~df["code_geo"].str.startswith(("2A", "2B", "97"))]
 
-    # 4. Type Casting
+    # Gestion des types
     df["libelle"] = df["libelle"].astype(str)
     numeric_cols = df.columns.drop(["code_geo", "libelle"])
     for col in numeric_cols:
@@ -37,8 +37,8 @@ def process_city_data(df):
 
 
 def prepare_geodair_data(df_geodair, df_villes_clean):
-    """Merges Geodair data with cleaned city data."""
-    # Rename
+    """Fusion des données météo avec le dataset des villes"""
+    # Renommage
     df_geodair = df_geodair.rename(columns=RENAME_GEODAIR)
 
     # Nettoyage de valeur et valeur_brute
@@ -50,22 +50,23 @@ def prepare_geodair_data(df_geodair, df_villes_clean):
                 df_geodair[col] = df_geodair[col].str.replace(',', '.')
             df_geodair[col] = pd.to_numeric(df_geodair[col], errors='coerce')
 
-    # Standardize Merge Keys
+    # Standardisation de la colonne de jointure (pour éviter son dédoublement)
     df_geodair['codgeo'] = df_geodair['codgeo'].astype(str).str.replace('.0', '', regex=False)
 
-    # Prepare city data for merge (rename keys to match geodair)
+    # Renommage des colonnes avant la jointure
     df_villes_prep = df_villes_clean.copy()
     df_villes_prep = df_villes_prep.rename(columns={'code_geo': 'codgeo', 'libelle': 'nom_commune'})
     df_villes_prep['codgeo'] = df_villes_prep['codgeo'].astype(str).str.replace('.0', '', regex=False)
 
-    # Merge
+    # Jointure
     df_merged = pd.merge(df_geodair, df_villes_prep, on="codgeo", how="left")
 
     return df_merged
 
+
 def aggregate_by_pollutant(df_complete):
-    """Aggregates data by Pollutant and City."""
-    # Define aggregation rules
+    """Aggrégation des mesures de l'air par polluant et par ville"""
+    # Définition des règles d'aggrégation
     regles = {"valeur": "mean", "valeur_brute": "mean"}
 
     cols_first = [
