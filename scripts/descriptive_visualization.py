@@ -10,7 +10,7 @@ def setup_styles():
     sns.set_theme(style="whitegrid")
 
 
-def plot_distributions(df, cols, output_dir="output/Desc_All_Cities"):
+def plot_distributions(df, cols, display=False, output_dir="output/Desc_All_Cities"):
     """Affichage d'histogramme des colonnes spécifiées"""
     os.makedirs(output_dir, exist_ok=True)
 
@@ -37,10 +37,12 @@ def plot_distributions(df, cols, output_dir="output/Desc_All_Cities"):
         plt.title(f'Distribution de {col} {echelle_suffix}')
         plt.tight_layout()
         plt.savefig(f"{output_dir}/hist_{col}.png", dpi=300)
+        if display:
+            plt.show()
         plt.close()
 
 
-def plot_correlation_heatmap(df, output_dir="output/Desc_All_Cities", pol=None):
+def plot_correlation_heatmap(df, output_dir="output/Desc_All_Cities", display=False, pol=None):
     """Génère et sauvegarde une matrice des corrélations"""
     # On ne garde que les colonnes numériques
     cols_corr = df.select_dtypes(include=[np.number]).columns
@@ -57,6 +59,8 @@ def plot_correlation_heatmap(df, output_dir="output/Desc_All_Cities", pol=None):
     plt.title('Matrice de Corrélation')
     plt.tight_layout()
     plt.savefig(f"{output_dir}/correlogram_{pol}.png", dpi=300)
+    if display:
+        plt.show()
     plt.close()
 
 
