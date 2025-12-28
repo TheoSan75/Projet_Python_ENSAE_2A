@@ -100,3 +100,70 @@ def plot_comparative_distributions(df_sample, df_france, polluant_name, vars_eco
         filename = f"{output_dir}/Distr_{polluant_name}_{var}.png"
         plt.savefig(filename, bbox_inches='tight')
         plt.close()
+
+
+def plot_combined_distributions_per_var(samples_dict, df_france, vars_eco, output_dir="output/plots_comparaison"):
+    """
+    Génère un graphique par variable. Chaque graphique contient :
+    - La distribution de la France entière (fond gris).
+    - La distribution (courbe KDE) pour chaque polluant présent dans samples_dict.
+
+    Args:
+        samples_dict (dict): Dictionnaire { "Nom_Polluant": df_sample }
+        df_france (pd.DataFrame): DataFrame de référence (France entière)
+        vars_eco (list): Liste des colonnes à tracer
+        output_dir (str): Dossier de sortie
+    """
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Définition d'une palette de couleurs pour les polluants
+    # "viridis", "deep", ou une liste manuelle de couleurs
+    palette = sns.color_palette("viridis", n_colors=len(samples_dict))
+
+    for var in vars_eco.keys():
+        # Nettoyage données France
+        data_france = df_france[var].dropna()
+        plt.figure(figsize=(12, 7))
+        # Détection échelle log
+        is_log = True if ("population" in var.lower() or "densite" in var.lower()) else False
+
+        # --- 1. Plot France (Histogramme de fond) ---
+        # On utilise stat="density" pour que l'échelle soit comparable aux courbes KDE
+        sns.histplot(data_france, stat="density", kde=False, color="lightgray", 
+                     label="France entière (Ref)", log_scale=is_log, alpha=0.4, element="step")
+        
+        # Ajout moyenne France (ligne verticale discrète)
+        plt.axvline(data_france.mean(), color='gray', linestyle=':', linewidth=1, alpha=0.8)
+
+        # --- 2. Boucle sur les polluants (Courbes KDE seulement) ---
+        for i, (polluant_name, df_sample) in enumerate(samples_dict.items()):
+            if var not in df_sample.columns:
+                continue
+                
+            data_sample = df_sample[var].dropna()
+            if data_sample.empty:
+                continue
+            
+            color = palette[i]
+            
+            # On utilise kdeplot (courbe) au lieu de histplot pour éviter le chaos visuel
+            sns.kdeplot(data_sample, color=color, label=polluant_name, 
+                        log_scale=is_log, linewidth=2, warn_singular=False)
+            
+            # Optionnel : Ajouter un marqueur pour la moyenne sur l'axe X ou une petite ligne
+            plt.axvline(data_sample.mean(), color=color, linestyle='--', linewidth=1.5, alpha=0.7)
+
+        # Finalisation du graphique
+        plt.title(f"Distribution comparative : {var}", fontsize=14)
+        plt.xlabel(var)
+        plt.ylabel("Densité")
+        plt.legend(title="Populations")
+        plt.grid(True, which="both", linestyle="--", linewidth=0.5, alpha=0.5)
+
+        filename = f"{output_dir}/Combined_Distr_{var}.png"
+        plt.savefig(filename, bbox_inches='tight', dpi=100)
+        if vars_eco[var]:
+            plt.show()
+        plt.close()
+
+    print(f"Graphiques générés dans : {output_dir}")
