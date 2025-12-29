@@ -20,6 +20,7 @@ Deux sources de données sont utilisées essentiellement:
 
 ## 3. Présentation du dépôt <a name=pres>
 
-Le fichier synthétisant nos analyses et constituant ainsi notre rapport final est ```main_clean.ipynb```.
+Le fichier synthétisant nos analyses et constituant ainsi notre rapport final est ```main.ipynb```.
 Certaines fonctions plus lourdes sont définies dans des scripts du dossier ```scripts```.
 Les données initiales, telles que récupérées sur internet sont localisées dans le dossier ```data/raw_data```, et les données traitées sont sauvegardées dans ```data/processed_data```.
+Tous les graphiques générés (notamment les corrélogrammes et les histogrammes) sont sauvegardés et consultables dans le dossier ```output```.
