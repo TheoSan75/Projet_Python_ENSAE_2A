@@ -1,5 +1,4 @@
 from sklearn.pipeline import Pipeline
-from sklearn.linear_model import LinearRegression
 import statsmodels.api as sm
 
 
@@ -23,7 +22,7 @@ def lasso_select_and_OLS(df_pol, lasso_pipeline):
 
         X_train_sm = sm.add_constant(X_train[features_selec])
         model_sm = sm.OLS(y_train, X_train_sm).fit()
-        print(model_sm.summary())
+        print(model_sm.get_robustcov_results().summary())
 
     else:
         print("Aucune variable explicative sélectionnée.")
