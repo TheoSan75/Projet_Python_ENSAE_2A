@@ -50,8 +50,6 @@ def add_city_codes(geodair):
 
         result[(lat, lon)] = (city, code_insee)
 
-        print(city, code_insee)
-
         time.sleep(SLEEP_SEC)
 
     geodair['Ville'] = geodair.apply(lambda r: result[(r['Latitude'], r['Longitude'])][0], axis=1)
