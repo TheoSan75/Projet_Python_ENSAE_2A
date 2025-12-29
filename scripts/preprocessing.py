@@ -69,12 +69,12 @@ def prepare_geodair_data(df_geodair, df_villes_clean):
             df_geodair[col] = pd.to_numeric(df_geodair[col], errors='coerce')
 
     # Standardisation de la colonne de jointure (pour éviter son dédoublement)
-    df_geodair['codgeo'] = df_geodair['codgeo'].astype(str).str.replace('.0', '', regex=False)
+    df_geodair['codgeo'] = df_geodair['codgeo'].str.replace('.0', '', regex=False)
 
     # Renommage des colonnes avant la jointure
     df_villes_prep = df_villes_clean.copy()
     df_villes_prep = df_villes_prep.rename(columns={'code_geo': 'codgeo', 'libelle': 'nom_commune'})
-    df_villes_prep['codgeo'] = df_villes_prep['codgeo'].astype(str).str.replace('.0', '', regex=False)
+    df_villes_prep['codgeo'] = df_villes_prep['codgeo'].str.replace('.0', '', regex=False)
     # Suppression des observations en Corse et outre-mer
     df_geodair = df_geodair[~df_geodair["codgeo"].str.startswith(("2A", "2B", "97"))]
 
