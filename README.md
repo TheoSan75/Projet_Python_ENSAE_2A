@@ -10,7 +10,7 @@
 
 ## 1. Objectifs <a name="objectifs">
 
-Il s'agit de prédire/expliquer les déterminants de la pollution de l'air dans les villes en France métropolitaine, à partir de caractéristiques démographiques et économiques des villes.
+L'objectif est de mettre en évidence les déterminants de la pollution de l'air dans les villes en France métropolitaine, à partir de caractéristiques démographiques et économiques des villes.
 
 ## 2. Sources des données <a name="sources">
 
