@@ -6,7 +6,6 @@
 1. [Objectifs](#objectifs)
 2. [Sources des données](#sources)
 3. [Présentation du dépôt](#pres)
-4. [Licence](#licence)
 
 ## 1. Objectifs <a name="objectifs">
 
@@ -24,7 +23,3 @@ Deux sources de données sont utilisées essentiellement:
 Le fichier synthétisant nos analyses et constituant ainsi notre rapport final est ```main_clean.ipynb```.
 Certaines fonctions plus lourdes sont définies dans des scripts du dossier ```scripts```.
 Les données initiales, telles que récupérées sur internet sont localisées dans le dossier ```data/raw_data```, et les données traitées sont sauvegardées dans ```data/processed_data```.
-
-## 4. Licence <a name="licence">
-
-Ce projet est sous licence GPLv3.
