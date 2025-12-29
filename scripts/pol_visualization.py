@@ -58,6 +58,7 @@ def visualization(geodair):
         )
 
         axes[i].set_title(f"Carte de la pollution mesurée en {polluant}")
+        axes[i].set_axis_off()
 
     plt.tight_layout()
     plt.show()
@@ -124,6 +125,7 @@ def visualization_OMS(geodair):
         )
 
         axes[i].set_title(f"Pollution en {polluant} (Seuil OMS: {seuil_OMS[polluant]} \u03BCg/m³)")
+        axes[i].set_axis_off()
 
     plt.tight_layout()
     plt.show()
