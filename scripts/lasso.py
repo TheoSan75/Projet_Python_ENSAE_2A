@@ -4,6 +4,13 @@ import statsmodels.api as sm
 
 def lasso_select_and_OLS(df_pol, lasso_pipeline):
 
+    """
+    Prend en argument un dataframe de pollution contenant une colonne 'valeur brute'
+    et les 10 variables explicatives considérées dans notre étude, ainsi qu'un pipeline lasso,
+    et affiche les variables sélectionnées, ainsi que les caractéristiques de la régression OLS 
+    sur ces variables.
+    """
+
     y_train = df_pol['valeur_brute']
     X_train = df_pol[['population_2022', 'mediane_niveau_vie_2021', 'densite_population_2022',
         'part_commerce_transport_services_2023', 'part_industrie_2023',
