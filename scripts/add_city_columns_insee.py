@@ -47,32 +47,3 @@ def add_city_codes(geodair):
     # On crée deux colonnes via une map vectorisée
     geodair['Ville'] = geodair.apply(lambda r: result[(r['Latitude'], r['Longitude'])][0], axis=1)
     geodair['CODGEO'] = geodair.apply(lambda r: result[(r['Latitude'], r['Longitude'])][1], axis=1)
-
-
-def add_city_coords(geodair):
-
-    communes = pd.read_csv("data/raw_data/20230823-communes-departement-region.csv")
-
-    communes = communes[["code_commune_INSEE", "latitude", "longitude"]].rename(columns={
-        "code_commune_INSEE": "CODGEO",
-        "latitude": "Latitude_commune",
-        "longitude": "Longitude_commune"
-    })
-
-    geodair = geodair.merge(
-        communes,
-        on="CODGEO",
-        how="left"
-    )
-
-    return geodair
-
-
-def add_city_columns(input_filename, output_filename):
-
-    geodair = pd.read_csv("data/raw_data/" + input_filename, sep=";")
-
-    add_city_codes(geodair)
-    geodair = add_city_coords(geodair)
-
-    geodair.to_csv("data/processed_data/" + output_filename, index=False)
