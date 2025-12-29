@@ -8,6 +8,13 @@ SLEEP_SEC = 0.12
 
 
 def reverse_insee(lat, lon, timeout=10):
+
+    """
+    Prend en argument une latitude et une longitude,
+    et retourne la commune où se trouve ces coordonnées, ainsi que son code commune INSEE,
+    en interrogeant l'API de data.gouv.fr.
+    """
+
     params = {"lat": lat, "lon": lon}
     try:
         r = requests.get(GOV_API, params=params, headers=HEADERS, timeout=timeout)
@@ -28,10 +35,13 @@ def reverse_insee(lat, lon, timeout=10):
 
 
 def add_city_codes(geodair):
-    # On ne garde que les coordonnées uniques
-    coords_unique = geodair[['Latitude', 'Longitude']].drop_duplicates()
 
-    # On va stocker les résultats ici
+    """
+    Ajoute au dataframe geodair une colonne 'Ville' et une colonne 'CODGEO'
+    contenant respectivement la ville où se situe chaque station et son code commune INSEE.
+    """
+
+    coords_unique = geodair[['Latitude', 'Longitude']].drop_duplicates()
     result = {}
 
     for idx, row in coords_unique.iterrows():
@@ -42,8 +52,7 @@ def add_city_codes(geodair):
 
         print(city, code_insee)
 
-        time.sleep(SLEEP_SEC)  # être "gentil" avec l’API
+        time.sleep(SLEEP_SEC)
 
-    # On crée deux colonnes via une map vectorisée
     geodair['Ville'] = geodair.apply(lambda r: result[(r['Latitude'], r['Longitude'])][0], axis=1)
     geodair['CODGEO'] = geodair.apply(lambda r: result[(r['Latitude'], r['Longitude'])][1], axis=1)
