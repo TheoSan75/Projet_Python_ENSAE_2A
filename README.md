@@ -2,7 +2,7 @@
 
 *Aymeric Lelièvre et Théo Sannier, 2025*
 
-# Table des matières
+## Table des matières
 1. [Objectifs](#objectifs)
 2. [Sources des données](#sources)
 3. [Présentation du dépôt](#pres)
