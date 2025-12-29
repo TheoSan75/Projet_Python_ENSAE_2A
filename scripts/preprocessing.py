@@ -3,16 +3,15 @@ import numpy as np
 from scripts.config import RENAME_VILLES_FULL, UNAVAILABLE_VALUES, RENAME_GEODAIR
 
 
-def load_and_merge_cities(path_geodair, path_villes, path_tourisme):
+def load_and_merge_cities(path_villes, path_tourisme):
     """Import des données et jointure des données touristiques sur les villes"""
-    data_geodair = pd.read_csv(path_geodair)
     data_villes = pd.read_csv(path_villes, sep=";")
     data_tourisme = pd.read_csv(path_tourisme, sep=";")
 
     data_villes.rename(columns={'Code': "CODGEO"}, inplace=True)
     df_merged = data_villes.merge(data_tourisme, on="CODGEO", how="left")
 
-    return df_merged, data_geodair
+    return df_merged
 
 
 def process_city_data(df):
